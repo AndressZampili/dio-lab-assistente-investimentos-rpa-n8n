@@ -176,38 +176,42 @@ Demonstração
 🎥 Vídeo: [COLE_AQUI_O_LINK_DO_VIDEO](https://drive.google.com/file/d/1Hb_ZP6cnB3X7LCh6J8lX7US2CKgEceT2/view?usp=sharing)
 🖼️ Prints: <img width="2992" height="695" alt="image" src="https://github.com/user-attachments/assets/35a25dc6-46b8-4893-992f-7c39169df330" />
 
-Notebook rodando no Colab
-Execução do workflow no N8N
-Mensagens geradas pelo agente
-Visão geral
+## Visão geral
 
 O fluxo faz quatro coisas:
 
-Coleta os clientes (nome, email, saldo e perfil) de uma página HTML hospedada no GitHub Pages, via web scraping com Python.
-Envia os dados por POST para um Webhook do N8N.
-Cruza o perfil de cada cliente (Conservador, Moderado ou Arrojado) com as opções do data.csv, considerando o saldo disponível.
-Gera uma mensagem personalizada para cada cliente com um Agente de IA e devolve o resultado na resposta do Webhook.
-Arquitetura
-scraping
-POST /webhook
-opcional
-GitHub Pagesindex.html
-Python + BeautifulSoupColab
-Webhook N8N
-HTTP Requestdata.csv
-Code: parse do CSV
-Code: cruza perfil e saldo
-AI AgentGemini
-Edit Fields
-Respond to Webhook
-Gmail
-Tecnologias
-Etapa	Ferramenta	Função
-Hospedagem	GitHub Pages	Servir a página de clientes e o CSV de investimentos
-Extração (RPA)	Python + BeautifulSoup	Coletar os dados dos clientes via web scraping
-Orquestração	N8N Cloud	Receber, processar e cruzar os dados
-Geração de texto	AI Agent + Google Gemini Chat Model	Criar mensagens personalizadas
-Estrutura do repositório
+1. **Coleta** os clientes (nome, email, saldo e perfil) de uma página HTML hospedada no GitHub Pages, via web scraping com Python.
+2. **Envia** os dados por POST para um Webhook do N8N.
+3. **Cruza** o perfil de cada cliente (Conservador, Moderado ou Arrojado) com as opções do `data.csv`, considerando o saldo disponível.
+4. **Gera** uma mensagem personalizada para cada cliente com um Agente de IA e devolve o resultado na resposta do Webhook.
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    A["GitHub Pages<br/>index.html"] -->|scraping| B["Python + BeautifulSoup<br/>Colab"]
+    B -->|"POST /webhook"| C[Webhook N8N]
+    C --> D["HTTP Request<br/>data.csv"]
+    D --> E["Code: parse do CSV"]
+    E --> F["Code: cruza perfil e saldo"]
+    F --> G["AI Agent<br/>Gemini"]
+    G --> H[Edit Fields]
+    H --> I[Respond to Webhook]
+    H -.opcional.-> J[Gmail]
+```
+
+## Tecnologias
+
+| Etapa | Ferramenta | Função |
+|---|---|---|
+| Hospedagem | GitHub Pages | Servir a página de clientes e o CSV de investimentos |
+| Extração (RPA) | Python + BeautifulSoup | Coletar os dados dos clientes via web scraping |
+| Orquestração | N8N Cloud | Receber, processar e cruzar os dados |
+| Geração de texto | AI Agent + Google Gemini Chat Model | Criar mensagens personalizadas |
+
+## Estrutura do repositório
+
+```
 📁 dio-lab-assistente-investimentos-rpa-n8n/
 ├── 📄 README.md
 ├── 📁 src/
@@ -217,16 +221,21 @@ Estrutura do repositório
 └── 📁 docs/
     ├── 📄 index.html               # Página de clientes
     └── 📄 data.csv                 # Opções de investimento por perfil
-Como executar
-Fork deste repositório e ative o GitHub Pages na pasta /docs.
-No N8N, importe o arquivo n8n/workflow.json (menu ⋯ > Import from File).
-Crie as credenciais no N8N:
-Google Gemini (PaLM) API: chave gerada no Google AI Studio.
-Gmail OAuth2 (opcional, só se for usar o envio de email).
-Confira no node HTTP Request se a URL aponta para o seu data.csv no GitHub Pages.
-Ative o workflow e copie a URL de Production do node Webhook.
-Abra src/extrair_clientes.ipynb no Google Colab, cole a URL em N8N_WEBHOOK e execute.
-Acompanhe a execução na aba Executions do N8N.
+```
+
+## Como executar
+
+1. Faça um **fork** deste repositório e ative o **GitHub Pages** na pasta `/docs`.
+2. No **N8N**, importe o arquivo `n8n/workflow.json` (menu `⋯` > *Import from File*).
+3. Crie as credenciais no N8N:
+   - **Google Gemini (PaLM) API**: chave gerada no Google AI Studio.
+   - **Gmail OAuth2** (opcional, só se for usar o envio de email).
+4. Confira no node **HTTP Request** se a URL aponta para o seu `data.csv` no GitHub Pages.
+5. **Ative o workflow** e copie a URL de **Production** do node Webhook.
+6. Abra `src/extrair_clientes.ipynb` no Google Colab, cole a URL em `N8N_WEBHOOK` e execute.
+7. Acompanhe a execução na aba *Executions* do N8N.
+
+> **Atenção:** a URL `/webhook-test/` só funciona com o botão *Listen for test event* ativo e aceita uma chamada por vez. Para o uso normal, use `/webhook/` com o workflow ativo.
 
 Atenção: a URL /webhook-test/ só funciona com o botão Listen for test event ativo e aceita uma chamada por vez. Para o uso normal, use /webhook/ com o workflow ativo.
 
@@ -292,20 +301,3 @@ Autor
 
 Seu Nome LinkedIn: www.linkedin.com/in/andress-zampili-de-moura-16b943304 · GitHub:[(https://github.com/AndressZampili)](https://github.com/AndressZampili)
 
-
-
-
-
-
-
-
-
-
-
-
-
----
-
-**Bons estudos e mãos à obra** 🚀
-
-Se tiver dúvidas, lembre-se: a melhor forma de aprender é experimentando. Erre, corrija e celebre cada pequena vitória no caminho.
