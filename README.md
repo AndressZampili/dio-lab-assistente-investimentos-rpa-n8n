@@ -166,9 +166,12 @@ Conecte o Agente de IA do N8N a um modelo como Gemini ou GPT para:
 - [GitHub Pages: Guia Rápido](https://pages.github.com/)
 
 
-Assistente de Investimentos com RPA e IA Generativa
 
-Pipeline de automação que coleta dados de clientes em uma página web com Python (RPA), orquestra o processamento no N8N e gera mensagens de recomendação personalizadas para cada perfil de investidor usando um Agente de IA (Gemini).
+
+
+# Assistente de Investimentos com RPA e IA Generativa
+
+# Pipeline de automação que coleta dados de clientes em uma página web com Python (RPA), orquestra o processamento no N8N e gera mensagens de recomendação personalizadas para cada perfil de investidor usando um Agente de IA (Gemini).
 
 Projeto desenvolvido para o desafio da DIO. Todos os dados de clientes são fictícios.
 
@@ -291,13 +294,15 @@ Envio por email (opcional)
 
 Há um node Gmail ligado depois do Edit Fields. Ele não faz parte dos entregáveis do desafio. Para a demonstração, o destinatário deve ser o email do próprio autor, já que os emails dos clientes são fictícios.
 
-Limitações e próximos passos
-Os dados são fictícios e a página de clientes é estática; num cenário real a fonte seria um sistema interno ou uma API.
-A saída do LLM não passa por validação automática. Um próximo passo seria checar, antes de enviar, se a mensagem cita apenas produtos da lista.
-O vínculo entre cliente e mensagem depende da ordem dos itens ($itemIndex). Se o fluxo passar a processar itens em paralelo ou fora de ordem, seria melhor carregar um identificador do cliente até o final.
-O plano gratuito do Gemini tem limite de requisições por minuto. Com mais clientes, seria necessário processar em lotes com espera entre as chamadas.
-As mensagens são exemplos de comunicação automatizada e não constituem recomendação de investimento.
-Autor
+## Limitações e próximos passos
+
+- **Dados fictícios:** a página de clientes é estática. Num cenário real, a fonte seria um sistema interno ou uma API.
+- **Sem validação da saída do LLM:** um próximo passo seria checar, antes de enviar, se a mensagem cita apenas produtos da lista.
+- **Vínculo por ordem dos itens:** a ligação entre cliente e mensagem depende do `$itemIndex`. Se o fluxo passar a processar itens em paralelo ou fora de ordem, seria melhor carregar um identificador do cliente até o final.
+- **Limite do plano gratuito do Gemini:** há um limite de requisições por minuto. Com mais clientes, seria necessário processar em lotes, com espera entre as chamadas.
+- **Aviso:** as mensagens são exemplos de comunicação automatizada e **não constituem recomendação de investimento**.
+
+# Autor
 
 Seu Nome LinkedIn: www.linkedin.com/in/andress-zampili-de-moura-16b943304 · GitHub:[(https://github.com/AndressZampili)](https://github.com/AndressZampili)
 
