@@ -1,13 +1,28 @@
-
 # Assistente de Investimentos com RPA e IA Generativa
 
-# Pipeline de automação que coleta dados de clientes em uma página web com Python (RPA), orquestra o processamento no N8N e gera mensagens de recomendação personalizadas para cada perfil de investidor usando um Agente de IA (Gemini).
+Pipeline de automação que coleta dados de clientes em uma página web com Python (RPA), orquestra o processamento no N8N e gera mensagens de recomendação personalizadas para cada perfil de investidor usando um Agente de IA (Gemini).
 
-Projeto desenvolvido para o desafio da DIO. Todos os dados de clientes são fictícios.
+> Projeto desenvolvido para o desafio da DIO. Todos os dados de clientes são fictícios.
 
-Demonstração
-🎥 Vídeo: [COLE_AQUI_O_LINK_DO_VIDEO](https://drive.google.com/file/d/1Hb_ZP6cnB3X7LCh6J8lX7US2CKgEceT2/view?usp=sharing)
-🖼️ Prints: <img width="2992" height="695" alt="image" src="https://github.com/user-attachments/assets/35a25dc6-46b8-4893-992f-7c39169df330" />
+## Demonstração
+
+🎥 **Vídeo:** [Assistir à demonstração (Google Drive)](https://drive.google.com/file/d/1Hb_ZP6cnB3X7LCh6J8lX7US2CKgEceT2/view?usp=sharing)
+
+🖼️ **Print do fluxo no N8N:**
+
+![Workflow no N8N](https://github.com/user-attachments/assets/35a25dc6-46b8-4893-992f-7c39169df330)
+
+<!-- Se quiser, adicione aqui os prints do Colab rodando e das mensagens geradas pelo agente -->
+
+### Exemplo do filtro por saldo
+
+Cada cliente só recebe produtos do próprio perfil cujo valor mínimo cabe no saldo dele:
+
+| Cliente | Perfil | Saldo | Produtos sugeridos |
+|---|---|---|---|
+| Ana Silva | Conservador | R$ 12.500,00 | Poupança, CDB Liquidez Diária, Tesouro Selic |
+| Bruno Lima | Moderado | R$ 3.200,00 | CDB Prefixado, Tesouro IPCA+ (o Fundo Multimercado exige R$ 5.000) |
+| Daniel Oliveira | Conservador | R$ 850,00 | Poupança, Tesouro Selic (o CDB Liquidez Diária exige R$ 1.000) |
 
 ## Visão geral
 
@@ -58,83 +73,91 @@ flowchart LR
 
 ## Como executar
 
-1. Faça um **fork** deste repositório e ative o **GitHub Pages** na pasta `/docs`.
+**Pré-requisitos:** conta no GitHub, conta no N8N Cloud, conta Google (Colab e Google AI Studio).
+
+1. Faça um **fork** deste repositório e ative o **GitHub Pages** na pasta `/docs` (*Settings > Pages*).
 2. No **N8N**, importe o arquivo `n8n/workflow.json` (menu `⋯` > *Import from File*).
 3. Crie as credenciais no N8N:
    - **Google Gemini (PaLM) API**: chave gerada no Google AI Studio.
    - **Gmail OAuth2** (opcional, só se for usar o envio de email).
-4. Confira no node **HTTP Request** se a URL aponta para o seu `data.csv` no GitHub Pages.
+4. No node **HTTP Request**, troque a URL pela do seu `data.csv` no GitHub Pages (`https://SEU-USUARIO.github.io/NOME-DO-REPO/data.csv`).
 5. **Ative o workflow** e copie a URL de **Production** do node Webhook.
 6. Abra `src/extrair_clientes.ipynb` no Google Colab, cole a URL em `N8N_WEBHOOK` e execute.
 7. Acompanhe a execução na aba *Executions* do N8N.
 
 > **Atenção:** a URL `/webhook-test/` só funciona com o botão *Listen for test event* ativo e aceita uma chamada por vez. Para o uso normal, use `/webhook/` com o workflow ativo.
 
-Atenção: a URL /webhook-test/ só funciona com o botão Listen for test event ativo e aceita uma chamada por vez. Para o uso normal, use /webhook/ com o workflow ativo.
+## Decisões técnicas
 
-Decisões técnicas
-Por que isso é RPA
+### Por que isso é RPA
 
 O script Python faz o que uma pessoa faria manualmente: abre uma página, lê uma tabela e leva os dados para outro sistema. Essa abordagem é útil quando não existe API disponível ou quando é preciso integrar sistemas legados.
 
-Cruzamento de perfil e opções dentro do código
+### Cruzamento de perfil e opções dentro do código
 
-O CSV e o POST do Python chegam ao N8N como itens diferentes: 1 item (a lista inteira de clientes) e 9 itens (uma linha por produto). Um node Merge por posição não resolve isso, porque o que se precisa é de 1 item por cliente. A solução foi usar dois nodes Code: um para converter o CSV em itens e outro para percorrer a lista de clientes e montar, para cada um, as opções adequadas.
+O CSV e o POST do Python chegam ao N8N como itens diferentes: 1 item (a lista inteira de clientes) e 9 itens (uma linha por produto). Um node Merge por posição não resolve isso, porque o que se precisa é de **1 item por cliente**. A solução foi usar dois nodes Code: um para converter o CSV em itens e outro para percorrer a lista de clientes e montar, para cada um, as opções adequadas.
 
-Filtro por saldo mínimo
+### Filtro por saldo mínimo
 
-Cada produto do CSV tem um valor mínimo de investimento. O código só inclui na lista produtos do mesmo perfil do cliente cujo mínimo seja menor ou igual ao saldo dele. Isso evita recomendar, por exemplo, um fundo de R$ 5.000 para quem tem R$ 3.200. O código também normaliza o formato do saldo (por exemplo, R$ 5.000,00 ou 5000) antes de comparar.
+Cada produto do CSV tem um valor mínimo de investimento. O código só inclui na lista produtos do mesmo perfil do cliente **cujo mínimo seja menor ou igual ao saldo dele**. Isso evita recomendar, por exemplo, um fundo de R$ 5.000 para quem tem R$ 3.200. O código também normaliza o formato do saldo (por exemplo, `R$ 5.000,00` ou `5000`) antes de comparar.
 
-Mensagem estática como base e IA como camada final
+### Mensagem estática como base e IA como camada final
 
-O MVP gera mensagens por template fixo, por perfil. O node Code mantém esse texto no campo mensagem_estatica, mas a saída final usa o texto do agente. Dessa forma o fluxo tem uma base de referência para comparação.
+O MVP gera mensagens por template fixo, por perfil. O node Code mantém esse texto no campo `mensagem_estatica`, mas a saída final usa o texto do agente. Dessa forma o fluxo tem uma base de referência para comparação.
 
-AI Agent com Gemini
+### AI Agent com Gemini
 
-O node AI Agent recebe, para cada cliente, nome, perfil, saldo e a lista de produtos já filtrada. Dois motivos para fazer o filtro antes do agente:
+O node **AI Agent** recebe, para cada cliente, nome, perfil, saldo e a lista de produtos já filtrada. Dois motivos para fazer o filtro **antes** do agente:
 
-O agente só enxerga produtos válidos, o que reduz o risco de ele inventar produtos ou rentabilidades.
-A regra de negócio (saldo mínimo) fica em código determinístico, e a IA cuida só da redação.
-Prompt do agente
+- O agente só enxerga produtos válidos, o que reduz o risco de ele inventar produtos ou rentabilidades.
+- A regra de negócio (saldo mínimo) fica em código determinístico, e a IA cuida só da redação.
 
-System Message
+### Prompt do agente
 
+**System Message**
+
+```
 Você é um assistente de investimentos de uma instituição financeira. Escreva mensagens curtas (máximo 4 frases), em português do Brasil, com tom cordial e profissional. Use SOMENTE os produtos da lista fornecida, sem inventar produtos ou rentabilidades. Nunca prometa retorno garantido; em renda variável, mencione o risco. Responda apenas com o texto da mensagem.
+```
 
-User Message
+**User Message**
 
+```
 Cliente: {{ $json.nome }}
 Perfil de investidor: {{ $json.perfil }}
 Saldo: {{ $json.saldo }}
 Produtos disponíveis para ele: {{ $json.opcoes }}
 
 Escreva a mensagem de recomendação para esse cliente.
+```
 
 As restrições do prompt (usar só a lista, não prometer retorno, citar risco em renda variável) existem porque o texto é financeiro.
 
-Reaproveitando nome e email depois do agente
+### Reaproveitando nome e email depois do agente
 
-O AI Agent devolve apenas o campo output. Para recuperar nome, email e perfil, o node Edit Fields busca os dados no node anterior usando $('Code in JavaScript1').all()[$itemIndex]. A expressão .item não funcionou, porque o node Code cria itens novos sem vínculo com os itens de entrada.
+O AI Agent devolve apenas o campo `output`. Para recuperar `nome`, `email` e `perfil`, o node **Edit Fields** busca os dados no node anterior usando `$('Code in JavaScript1').all()[$itemIndex]`. A expressão `.item` não funcionou, porque o node Code cria itens novos sem vínculo com os itens de entrada.
 
-Respond to Webhook
+### Respond to Webhook
 
-O workflow termina com Respond to Webhook configurado para devolver todos os itens, e o Python recebe as mensagens geradas na própria resposta. Como o agente faz uma chamada ao LLM por cliente, o script define timeout=120 na requisição.
+O workflow termina com **Respond to Webhook** configurado para devolver todos os itens, e o Python recebe as mensagens geradas na própria resposta. Como o agente faz uma chamada ao LLM por cliente, o script define `timeout=120` na requisição.
 
-Envio por email (opcional)
+### Envio por email (opcional)
 
-Há um node Gmail ligado depois do Edit Fields. Ele não faz parte dos entregáveis do desafio. Para a demonstração, o destinatário deve ser o email do próprio autor, já que os emails dos clientes são fictícios.
+Há um node **Gmail** ligado ao **Edit Fields**, em paralelo ao Respond to Webhook, para que uma falha no envio não impeça a resposta do Webhook. Ele não faz parte dos entregáveis do desafio. Para a demonstração, o destinatário deve ser o email do próprio autor, já que os emails dos clientes são fictícios.
 
 ## Limitações e próximos passos
 
-- **Dados fictícios:** a página de clientes é estática. Num cenário real, a fonte seria um sistema interno ou uma API.
-- **Sem validação da saída do LLM:** um próximo passo seria checar, antes de enviar, se a mensagem cita apenas produtos da lista.
-- **Vínculo por ordem dos itens:** a ligação entre cliente e mensagem depende do `$itemIndex`. Se o fluxo passar a processar itens em paralelo ou fora de ordem, seria melhor carregar um identificador do cliente até o final.
-- **Limite do plano gratuito do Gemini:** há um limite de requisições por minuto. Com mais clientes, seria necessário processar em lotes, com espera entre as chamadas.
-- **Aviso:** as mensagens são exemplos de comunicação automatizada e **não constituem recomendação de investimento**.
+- Os dados são fictícios e a página de clientes é estática; num cenário real a fonte seria um sistema interno ou uma API.
+- A saída do LLM não passa por validação automática. Um próximo passo seria checar, antes de enviar, se a mensagem cita apenas produtos da lista.
+- O vínculo entre cliente e mensagem depende da ordem dos itens (`$itemIndex`). Se o fluxo passar a processar itens em paralelo ou fora de ordem, seria melhor carregar um identificador do cliente até o final.
+- O plano gratuito do Gemini tem limite de requisições por minuto. Com mais clientes, seria necessário processar em lotes com espera entre as chamadas.
+- As mensagens são exemplos de comunicação automatizada e **não constituem recomendação de investimento**.
 
-# Autor
+## Autor
 
-Seu Nome LinkedIn: www.linkedin.com/in/andress-zampili-de-moura-16b943304 · GitHub:[(https://github.com/AndressZampili)](https://github.com/AndressZampili)
+**Andress Zampili de Moura**
+
+[LinkedIn](https://www.linkedin.com/in/andress-zampili-de-moura-16b943304) · [GitHub](https://github.com/AndressZampili)
 
 
 # Desafio da DIO
